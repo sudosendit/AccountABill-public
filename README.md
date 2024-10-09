@@ -34,7 +34,7 @@ This application requires the following files:
 
 - [billers.csv](billers.csv)
 - [timesheet.csv](timesheet.csv)
-- [micon.ico] (micon.ico)
+- [micon.ico](micon.ico)
 
 
 ## Installation

@@ -1,8 +1,13 @@
-[Click Here to Download](https://github.com/sudosendit/AccountABill-public/)
+[Click Here to Download](https://github.com/sudosendit/AccountABill-public/archive/refs/heads/main.zip)
 
-![blinky-bill (Small)](https://github.com/user-attachments/assets/8f99b16e-5a86-48df-a422-085a050c66d7)
+# Screenshot
+
+![AAB-SS](https://github.com/user-attachments/assets/12a80c90-4ecb-4bdf-b80a-14ba7146ec9c)
+
 
 # Account A Bill
+
+![blinky-bill (Small)](https://github.com/user-attachments/assets/8f99b16e-5a86-48df-a422-085a050c66d7)
 
 Account A Bill is a Windows application designed to enhance the efficiency of service staff in managing client billing. The application provides timely prompts every 15 minutes, allowing users to seamlessly record their upcoming tasks and ensure accurate tracking of their work activities throughout the day.
 
@@ -27,8 +32,9 @@ Submit bug reports and feature suggestions, or track changes in the
 
 This application requires the following files:
 
-- [Client Billing List](billers.csv)
-- [Timesheet Template](timesheet.csv)
+- [billers.csv](billers.csv)
+- [timesheet.csv](timesheet.csv)
+- [micon.ico] (micon.ico)
 
 
 ## Installation

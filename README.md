@@ -20,6 +20,7 @@ Submit bug reports and feature suggestions, or track changes in the
 
 ## Table of contents
 
+- Screenshot
 - Requirements
 - Installation
 - Configuration

@@ -12,10 +12,10 @@
 Account A Bill is a Windows application designed to enhance the efficiency of service staff in managing client billing. The application provides timely prompts every 15 minutes, allowing users to seamlessly record their upcoming tasks and ensure accurate tracking of their work activities throughout the day.
 
 For a full description of the module, visit the
-[project page](https://github.com/sudosendit/AccountABill-public/).
+[project page](https://github.com/sudosendit/AccountABill-publicbeta/).
 
 Submit bug reports and feature suggestions, or track changes in the
-[issue queue](https://github.com/sudosendit/AccountABill-public/issues).
+[issue queue](https://github.com/sudosendit/AccountABill-publicbeta/issues).
 
 
 ## Table of contents
@@ -40,7 +40,7 @@ This application requires the following files:
 ## Installation
 
 No installation required. For further information, see
-[User Guide for Account A Bill](https://github.com/sudosendit/AccountABill-public/).
+[User Guide for Account A Bill](https://github.com/sudosendit/AccountABill-publicbeta/).
 
 
 ## Configuration

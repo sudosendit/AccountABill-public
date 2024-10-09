@@ -1,4 +1,4 @@
-[Click Here to Download](https://github.com/sudosendit/AccountABill-public/archive/refs/heads/main.zip)
+[Click Here to Download](https://github.com/sudosendit/AccountABill-publicbeta/archive/refs/heads/main.zip)
 
 # Screenshot
 

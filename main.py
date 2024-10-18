@@ -40,7 +40,7 @@ class TK_Window:
         window.attributes('-topmost', True)
         window.geometry(f'{self.xgeo}x{self.ygeo}+{str(int(x_offset))}+{str(int(y_offset))}')
         window.title(self.title)
-        window.iconbitmap("micon.ico")  # Set icon for application
+        window.iconbitmap(install_location+'micon.ico')  # Set icon for application
         wframe = ttk.Frame(window, padding=15)
         wframe.grid()
     
@@ -212,7 +212,7 @@ def main_window_spawn(_file_target, _timeslot_target, text_message):
     ttk.Button(main_frame , text="Quit", command=main_window.destroy).grid(column=1, row=6)
     ttk.Label(main_frame, text=" ").grid(column=0, row=7)
     ttk.Label(main_frame, text=" ").grid(column=0, row=8)
-    ttk.Label(main_frame, text=f"Hours you have billed today:       {total_hours_worked} /hrs").grid(column=0, row=9)
+    ttk.Label(main_frame, text=f"Hours you have billed today:       {total_hours_worked[0]} /hrs").grid(column=0, row=9)
     ttk.Button(main_frame , text="Update a Previous Timeslot", command=update_timeslot).grid(column=0, row=10)
     
     main_window.mainloop()
@@ -356,10 +356,10 @@ def check_or_make_schedule():
         return returned_location
 
 # Function to check start time and amend any missing timeslots
-def find_missing_slot(target): 
+def find_missing_slot(target_file): 
     rounded_time = get_rounded_time()
     starting_time_guess_list = []
-    current_timesheet_cells = csv_reader(target)
+    current_timesheet_cells = csv_reader(target_file)
 
     for row in current_timesheet_cells:
         if len(row['_billing_one']) >= 1:
@@ -392,14 +392,63 @@ def find_missing_slot(target):
 def calc_work_time(target_file):
     total_hour_count = 0
     current_timesheet_cells = csv_reader(target_file)
+    work_slots = []
+    break_slots = []
 
+    # Build list and calculate work hours.
     for row in current_timesheet_cells:
-        if len(row['_billing_one']) >= 1 and 'On Break' not in row['_billing_one']:
-            total_hour_count += 1
+        if len(row['_billing_one']) >= 1:
+            work_slots.append(row)
+            if 'On Break' not in row['_billing_one']:
+                total_hour_count += 1
+            elif 'On Break' in row['_billing_one']:
+                break_slots.append(row)
+
+    try:
+        start_time_slot = work_slots[0]
+        start_time = start_time_slot['_time']
+
+        last_slot = work_slots[-1]
+
+    except IndexError:
+        pass
+
+    try:
+        break_start_slot = break_slots[0]
+        break_start = break_start_slot['_time']
+
+        break_last_slot = break_slots[-1]
+
+    except IndexError:
+        break_start = None
+        
+
+    if last_slot is not None:
+        for row in current_timesheet_cells:
+            if last_slot['_time'] in row['_time']:
+                finish_row_number = int(row['row_no']) + 1
+        
+        for row in current_timesheet_cells:
+            if finish_row_number == row['row_no']:
+                finish_time = row['_time']
+
+    else:
+        pass
+
+    if len(break_slots) >= 1:
+        for row in current_timesheet_cells:
+            if break_last_slot['_time'] in row['_time']:
+                break_finish_row_number = int(row['row_no']) + 1
+
+        for row in current_timesheet_cells:
+            if break_finish_row_number == row['row_no']:
+                break_finish = row['_time']
+    else:
+        break_finish = None
 
     total_hours = ((total_hour_count * 15) / 60)
     
-    return total_hours
+    return total_hours, start_time, finish_time, break_start, break_finish
 
 def calc_biller_time(target_file, biller, key):
     current_timesheet_cells = csv_reader(target_file)
@@ -410,10 +459,10 @@ def calc_biller_time(target_file, biller, key):
             counter += 1
 
     total_time =  ((counter * 15) / 60)
-
+    
     return total_time
 
-def get_totals(target_file):
+def get_totals(target_file, totals_date):
     
     class Catergory:
         def __init__(self, name, list, key, counter):
@@ -430,13 +479,12 @@ def get_totals(target_file):
     for row in billers_csv: # not amendedin cat_one.list with only 'Standard Billing' 
         cat_one.list.append(row[cat_one.key])
     
-    
     for row in billers_csv:
         cat_two.list.append(row[cat_two.key])
 
-    total_hours_worked = calc_work_time(target_file)
+    total_hours_worked, start_time, end_time, break_start_time, break_end_time = calc_work_time(target_file)
 
-    totals_message = TK_Window(600, 225, 'Daily Totals')
+    totals_message = TK_Window(600, 275, f'Working Totals for {totals_date}')
     totals_window, totals_frame = totals_message.spawn_window()
     
     for cat_one_biller in cat_one.list:
@@ -452,11 +500,80 @@ def get_totals(target_file):
             cat_two.counter += 1
 
     ttk.Label(totals_frame, text=f" ").grid(column=0, row=(cat_one.counter + 1))
-    ttk.Label(totals_frame, text=f"Total hours you have billed today:       {total_hours_worked} /hrs").grid(column=0, row=(cat_one.counter + 2))
+    ttk.Label(totals_frame, text=f"Total hours you have billed:       {total_hours_worked} /hrs").grid(column=0, row=(cat_one.counter + 2))
     ttk.Label(totals_frame, text=f" ").grid(column=0, row=(cat_one.counter + 3))
-    ttk.Button(totals_frame, text="Ok", command=totals_window.destroy).grid(column=0, row=(cat_one.counter + 4))
+    ttk.Label(totals_frame, text=f"Starting Time: {start_time}").grid(column=0, row=(cat_one.counter + 4))
+    ttk.Label(totals_frame, text=f"Finishing Time: {end_time}").grid(column=0, row=(cat_one.counter + 5))
+    ttk.Label(totals_frame, text=f"Break Start: {break_start_time}").grid(column=1, row=(cat_one.counter + 4))
+    ttk.Label(totals_frame, text=f"Break Finish: {break_end_time}").grid(column=1, row=(cat_one.counter + 5))
+    ttk.Label(totals_frame, text=f" ").grid(column=0, row=(cat_one.counter + 6))
+    ttk.Button(totals_frame, text="Ok", command=totals_window.destroy).grid(column=0, row=(cat_one.counter + 7))
 
     totals_window.mainloop()
+
+def find_work_times():
+
+    def spawn_times():
+
+        # Data input check
+        the_day = day_entry.get().strip()
+        the_month = month_entry.get().strip()
+        the_year = year_entry.get().strip()
+
+        if the_day >= '32' or the_day <= '0' or len(the_day) >= 3 or len(the_day) <= 0: 
+            error_window_spawn('Error', 'Please select a day between 1 - 31.')
+            return
+
+        if the_month >= '13' or the_month <= '0' or len(the_month) >= 3 or len(the_month) <= 0:
+            error_window_spawn('Error', 'Please select a month between 1 - 12.')
+            return
+
+        if len(the_year) != 4:
+            error_window_spawn('Error', 'Please input just 4 digits for the year.')
+            return
+
+        # file
+        totals_date = f'{the_day}-{the_month}-{the_year}'
+        search_location = install_location + 'timesheets\\' + f'{the_month}-{the_year}\\'
+        try:
+            os.chdir(search_location)
+
+        except FileNotFoundError:
+            error_window_spawn('Error', f'Could not find the month folder: {the_month}-{the_year}')
+            return
+
+        
+        for file in os.listdir():
+            if totals_date in file:
+                the_target = search_location+file
+                
+        os.chdir(install_location)
+
+        try:
+            get_totals(the_target, totals_date)
+        except UnboundLocalError:
+            error_window_spawn('Error', f'There is no file with the date: {totals_date}')
+        
+    worktimes_message = TK_Window(450, 150, 'Find Past Totals')
+    worktimes_window, worktimes_frame = worktimes_message.spawn_window()
+
+    day_entry = StringVar(worktimes_window)
+    month_entry = StringVar(worktimes_window)
+    year_entry = StringVar(worktimes_window)
+
+    ttk.Label(worktimes_frame, text=f"Enter Day:").grid(column=0, row=1)
+    ttk.Label(worktimes_frame, text=f"Enter Month:").grid(column=1, row=1)
+    ttk.Label(worktimes_frame, text=f"Enter Year:").grid(column=2, row=1)
+    
+    ttk.Entry(worktimes_frame, textvariable=day_entry).grid(column=0, row=2)
+    ttk.Entry(worktimes_frame, textvariable=month_entry).grid(column=1, row=2)
+    ttk.Entry(worktimes_frame, textvariable=year_entry).grid(column=2, row=2)
+
+    
+    ttk.Button(worktimes_frame, text="Find", command=spawn_times).grid(column=0, row=3)
+    ttk.Button(worktimes_frame, text="Close", command=worktimes_window.destroy).grid(column=1, row=3)
+    worktimes_window.mainloop()
+
 
 ### MAIN THREAD FUNCTIONS
 def auto_pop(target_file):
@@ -500,15 +617,21 @@ def command_line(target_file):
             print("""\n--- Help Menu ---
 'update'        - To update a timeslot.
 'totals'        - To calculate daily totals.
+'find'/'pasttotals'     - To find start and end times for a day.
 'h' / 'help'    - for Help.
 'clear' / 'cls' - to clear data in Terminal.
 'exit' / 'quit' - to Exit the program.  
 ------------------\n""")
 
         elif user_input.lower() in ['exit', 'quit']:
-            print('Program is shutting down...')
-            time.sleep(2)
-            quit()
+            input_confirm = input('Are you sure you want to quit (y/n): ')
+            if input_confirm.lower() in ['yes', 'y']:
+                print('Program is shutting down...')
+                time.sleep(0.5)
+                quit()
+            else:
+                print('Type "yes" after exit command to shutdown program.')
+                pass
 
         elif user_input.lower() in ['cls', 'clear']:
             os.system('cls')
@@ -521,11 +644,15 @@ def command_line(target_file):
             main_window_spawn(target_file, rounded_time, msg_text)
 
         elif user_input.lower() in ['totals']:
-            get_totals(target_file)
+            the_date = time.strftime("%d/%m/%Y")
+            get_totals(target_file, the_date)
 
         elif user_input.lower() in ['time']:
             rounded_time = get_rounded_time()
             error_window_spawn('Current Timeslot Check', f'The current timeslot is: {rounded_time}')
+        
+        elif user_input.lower() in ['find', 'pasttotals']:
+            find_work_times()
 
         else: 
             print('Please type "help" for options.')

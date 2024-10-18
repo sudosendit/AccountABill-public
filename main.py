@@ -616,8 +616,8 @@ def command_line(target_file):
         if user_input.lower() in ['help', '?']:
             print("""\n--- Help Menu ---
 'update'        - To update a timeslot.
-'totals'        - To calculate daily totals.
-'find'/'pasttotals'     - To find start and end times for a day.
+'totals'        - To calculate todays daily totals.
+'find'          - To find daily totals for another date.
 'h' / 'help'    - for Help.
 'clear' / 'cls' - to clear data in Terminal.
 'exit' / 'quit' - to Exit the program.  
@@ -635,7 +635,7 @@ def command_line(target_file):
 
         elif user_input.lower() in ['cls', 'clear']:
             os.system('cls')
-            print("AAB Start Success - Use 'Ctrl + C' to stop this program.")
+            print("AAB Start Success - Type 'exit' to stop this program.")
             print('Version: ' + program_version_number)
 
         elif user_input.lower() in ['update']:
@@ -663,7 +663,7 @@ def command_line(target_file):
 ### Program Loop ###
 if __name__ in "__main__":
     target_file = check_or_make_schedule()
-    print("AAB Start Success - Use 'Ctrl + C' to stop this program.")
+    print("AAB Start Success - Type 'exit' to stop this program.")
     print('Version: ' + program_version_number)
 
     #### DEVELOPMENT

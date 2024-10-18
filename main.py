@@ -8,7 +8,7 @@ import sys
 import threading
 
 ######### Made by Liam Lawes
-program_version_number = '0.2.5.241010' + ' - Beta'
+program_version_number = '0.2.6.241018' + ' - Beta'
 ###########################
 
 ### Default Vars ###

@@ -411,7 +411,8 @@ def calc_work_time(target_file):
         last_slot = work_slots[-1]
 
     except IndexError:
-        pass
+        start_time = None
+        
 
     try:
         break_start_slot = break_slots[0]
@@ -422,18 +423,21 @@ def calc_work_time(target_file):
     except IndexError:
         break_start = None
         
+    try:
+        if last_slot is not None:
+            for row in current_timesheet_cells:
+                if last_slot['_time'] in row['_time']:
+                    finish_row_number = int(row['row_no']) + 1
 
-    if last_slot is not None:
-        for row in current_timesheet_cells:
-            if last_slot['_time'] in row['_time']:
-                finish_row_number = int(row['row_no']) + 1
-        
-        for row in current_timesheet_cells:
-            if finish_row_number == row['row_no']:
-                finish_time = row['_time']
+            for row in current_timesheet_cells:
+                if finish_row_number == row['row_no']:
+                    finish_time = row['_time']
 
-    else:
-        pass
+        else:
+            pass
+    except UnboundLocalError:
+        last_slot = None
+        finish_time = None
 
     if len(break_slots) >= 1:
         for row in current_timesheet_cells:

@@ -6,9 +6,10 @@ import csv
 import shutil
 import sys
 import threading
+import configparser
 
 ######### Made by Liam Lawes
-program_version_number = '0.2.6.241018' + ' - Beta'
+program_version_number = '0.2.7.250106' + ' - Beta'
 ###########################
 
 ### Default Vars ###
@@ -407,6 +408,7 @@ def calc_work_time(target_file):
     try:
         start_time_slot = work_slots[0]
         start_time = start_time_slot['_time']
+        start_time_row = start_time_slot['row_no']
 
         last_slot = work_slots[-1]
 
@@ -425,16 +427,17 @@ def calc_work_time(target_file):
         
     try:
         if last_slot is not None:
-            for row in current_timesheet_cells:
-                if last_slot['_time'] in row['_time']:
-                    finish_row_number = int(row['row_no']) + 1
+            working_hours = float(GBVAR_working_hours)
+            remaining_work_slots = working_hours/0.25
+            finish_time_row = (start_time_row + remaining_work_slots) + len(break_slots)
 
             for row in current_timesheet_cells:
-                if finish_row_number == row['row_no']:
+                if finish_time_row == row['row_no']:
                     finish_time = row['_time']
 
         else:
             pass
+
     except UnboundLocalError:
         last_slot = None
         finish_time = None
@@ -578,6 +581,49 @@ def find_work_times():
     ttk.Button(worktimes_frame, text="Close", command=worktimes_window.destroy).grid(column=1, row=3)
     worktimes_window.mainloop()
 
+def config_ini():
+    def create_config():
+        try:
+            os.remove(cfg_file)
+        except FileNotFoundError:
+            pass
+        os.system(f'echo > {cfg_file}')
+        with open(cfg_file, 'w') as new_cfg:
+            config[SECTION] = default_cfg_content
+            config.write(new_cfg)
+            print('New Configuration has been successfully created.')
+            new_cfg.close()
+
+    def read_config():
+        with open(cfg_file, 'r') as config_choices:
+            config.read(cfg_file)
+            if config.has_section(SECTION) and config.has_option(SECTION, WH_KEY):
+                print('Configuration loaded successfully.')
+                global GBVAR_working_hours
+                GBVAR_working_hours = config[SECTION][WH_KEY]
+
+            else:
+                print('Error reading configuration, attempting to return configuration to default.')
+                config_choices.close()
+                create_config()
+                read_config()
+
+    config = configparser.ConfigParser()
+    SECTION = 'CONFIG'
+    WH_KEY = 'working hours'
+    cfg_file = 'cfg.ini'
+
+    default_cfg_content = {
+        f'{WH_KEY}':'7',
+    }
+
+    try:
+        with open(cfg_file):
+            pass
+    except FileNotFoundError: 
+        create_config()
+    
+    read_config()
 
 ### MAIN THREAD FUNCTIONS
 def auto_pop(target_file):
@@ -622,6 +668,8 @@ def command_line(target_file):
 'update'        - To update a timeslot.
 'totals'        - To calculate todays daily totals.
 'find'          - To find daily totals for another date.
+'time'          - To check the current timeslot.
+'config'        - To open configuration file.
 'h' / 'help'    - for Help.
 'clear' / 'cls' - to clear data in Terminal.
 'exit' / 'quit' - to Exit the program.  
@@ -658,6 +706,10 @@ def command_line(target_file):
         elif user_input.lower() in ['find', 'pasttotals']:
             find_work_times()
 
+        elif user_input.lower() in ['config', 'cfg']:
+            os.system('start cfg.ini')
+            print('\nPlease remember to restart the program after updating the config file.\n')
+
         else: 
             print('Please type "help" for options.')
   
@@ -667,7 +719,8 @@ def command_line(target_file):
 ### Program Loop ###
 if __name__ in "__main__":
     target_file = check_or_make_schedule()
-    print("AAB Start Success - Type 'exit' to stop this program.")
+    config_ini()
+    print("AAB Start Program Success - Type 'exit' to stop this program.")
     print('Version: ' + program_version_number)
 
     #### DEVELOPMENT
